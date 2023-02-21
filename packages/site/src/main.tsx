@@ -13,12 +13,28 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
 
 function Main() {
   return (
-    <>
-      <div className={classes.main}>
-        <div className={classes.textWrapper}>
-          <h1 className={classes.title}>mosfez-sampler</h1>
-        </div>
-      </div>
-    </>
+    <div className={classes.main}>
+      <ListHeader>
+        mosfez-sampler test site -{" "}
+        <a
+          className={classes.link}
+          href="https://github.com/dxinteractive/mosfez-sampler"
+        >
+          github repo
+        </a>
+      </ListHeader>
+    </div>
+  );
+}
+
+type ListHeaderProps = {
+  children: React.ReactNode;
+};
+
+function ListHeader(props: ListHeaderProps) {
+  return (
+    <header className={classes.dspHeader}>
+      <div className={classes.dspHeaderTitle}>{props.children}</div>
+    </header>
   );
 }

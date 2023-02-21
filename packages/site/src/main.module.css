@@ -1,12 +1,63 @@
 .main {
-  padding: 24px;
+  padding: 1rem;
 }
 
-.title {
-  font-family: Georgia, 'Times New Roman', Times, serif;
-  font-weight: 700;
-  font-size: 36px;
-  line-height: 36px;
-  margin-bottom: 16px;
-  color: var(--colorText);
+.list {
+  margin-top: .5rem;
+  padding-left: 2rem;
+  padding-top: 1rem;
+  list-style-type: decimal-leading-zero;
+  border-top: 1px solid var(--colorBack3);
+}
+
+.listItem {
+  padding-bottom: .25rem;
+}
+
+.footer {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--colorBack3);
+}
+
+.footer a {
+  padding-right: 1rem;
+}
+
+.dspHeader {
+  display: flex;
+}
+
+.dspHeaderTitle {
+  flex-grow: 1;
+}
+
+.dspHeaderBack {
+  padding-left: 1rem;
+}
+
+.dspType {
+  font-size: 16px;
+  color: var(--colorText2);
+}
+
+.dspPre {
+  font-size: 14px;
+}
+
+.dspContent {
+  margin-top: 2rem;
+  border-top: 1px solid var(--colorBack3);
+  padding-top: 1rem;
+}
+
+.dspContent:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+.link {
+  color: var(--colorText2);
+  font-size: 16px;
 }
