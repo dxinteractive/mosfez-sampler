@@ -1,5 +1,5 @@
 {
-  "name": "mosfez-sampler",
+  "name": "mosfez-sampler-monorepo",
   "version": "0.0.0",
   "description": "A microtonal-aware sampler engine for web",
   "keywords": [],
@@ -13,10 +13,11 @@
   "scripts": {
     "prep": "yarn && yarn lerna bootstrap",
     "lint": "yarn eslint ./packages",
-    "test": "echo \"no tests yet\" && exit 0",
+    "test": "yarn lerna run test",
     "pretty": "yarn prettier --write .",
     "dev": "yarn lerna run dev",
     "build": "yarn lerna run build",
+    "clean": "yarn lerna run clean",
     "preview": "yarn lerna run preview",
     "build-gh-pages": "yarn lerna run build-gh-pages"
   },
