@@ -1,0 +1,12 @@
+.main {
+  padding: 24px;
+}
+
+.title {
+  font-family: Georgia, 'Times New Roman', Times, serif;
+  font-weight: 700;
+  font-size: 36px;
+  line-height: 36px;
+  margin-bottom: 16px;
+  color: var(--colorText);
+}
