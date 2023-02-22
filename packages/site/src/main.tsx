@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import ReactDOM from "react-dom/client";
 
 import "./css/base.css";
 import classes from "./main.module.css";
+import { Codebox } from "./codebox/codebox";
 
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 ReactDOM.createRoot(document.getElementById("root")!).render(
@@ -12,6 +13,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
 );
 
 function Main() {
+  const [text, setText] = useState("abc");
   return (
     <div className={classes.main}>
       <ListHeader>
@@ -23,6 +25,7 @@ function Main() {
           github repo
         </a>
       </ListHeader>
+      <Codebox value={text} onChange={(e) => setText(e.target.value)} />
     </div>
   );
 }
@@ -33,8 +36,8 @@ type ListHeaderProps = {
 
 function ListHeader(props: ListHeaderProps) {
   return (
-    <header className={classes.dspHeader}>
-      <div className={classes.dspHeaderTitle}>{props.children}</div>
+    <header className={classes.listHeader}>
+      <div className={classes.listHeaderTitle}>{props.children}</div>
     </header>
   );
 }

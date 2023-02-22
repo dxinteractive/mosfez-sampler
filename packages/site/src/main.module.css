@@ -24,34 +24,35 @@
   padding-right: 1rem;
 }
 
-.dspHeader {
+.listHeader {
   display: flex;
+  padding-bottom: 1rem;
 }
 
-.dspHeaderTitle {
+.listHeaderTitle {
   flex-grow: 1;
 }
 
-.dspHeaderBack {
+.listHeaderBack {
   padding-left: 1rem;
 }
 
-.dspType {
+.listType {
   font-size: 16px;
   color: var(--colorText2);
 }
 
-.dspPre {
+.listPre {
   font-size: 14px;
 }
 
-.dspContent {
+.listContent {
   margin-top: 2rem;
   border-top: 1px solid var(--colorBack3);
   padding-top: 1rem;
 }
 
-.dspContent:after {
+.listContent:after {
   content: "";
   display: table;
   clear: both;

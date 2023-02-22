@@ -14,8 +14,11 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "paths": {
+      "mosfez-sampler/*": ["../sampler/src/*"]
+    }
   },
-  "include": ["src"],
+  "include": ["src", "../sampler/src"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
