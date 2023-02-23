@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import ReactDOM from "react-dom/client";
 
 import "./css/base.css";
+import "./main.css";
 import classes from "./main.module.css";
 import { Codebox } from "./codebox/codebox";
 
@@ -13,7 +14,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
 );
 
 function Main() {
-  const [text, setText] = useState("abc");
+  const [text, setText] = useState("abc\ndef");
   return (
     <div className={classes.main}>
       <ListHeader>
@@ -25,7 +26,16 @@ function Main() {
           github repo
         </a>
       </ListHeader>
-      <Codebox value={text} onChange={(e) => setText(e.target.value)} />
+      <Codebox
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        highlight="  a b a"
+        className="codebox"
+        padX={10}
+        padY={10}
+        inputMode="touch"
+        onCellClick={console.log}
+      />
     </div>
   );
 }

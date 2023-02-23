@@ -1,16 +1,114 @@
+import { useCallback, useMemo } from "react";
+import clsx from "clsx";
 import classes from "./codebox.module.css";
+
+function toNumber(str?: string) {
+  return str === undefined ? undefined : Number(str);
+}
+
+function useHighlightedChars(
+  text: string,
+  highlight: string,
+  padX: number | undefined,
+  padY: number | undefined
+) {
+  return useMemo(() => {
+    console.log("...");
+    const elems: React.ReactNode[] = [];
+    const highlights = highlight.split("");
+    const lines = text.split("\n");
+    const ymax = Math.max(lines.length, padY ?? 0);
+    let charsSoFar = 0;
+    for (let y = 0; y < ymax; y++) {
+      const line = lines[y];
+      if (line) {
+        const xmax = Math.max(line.length, padX ?? 0);
+        for (let x = 0; x < xmax; x++) {
+          const charIndex = charsSoFar + x;
+          const char = line[x];
+          const h = char ? highlights[charIndex] : undefined;
+          const c = char ? charIndex : undefined;
+          const className = h ? `highlight-${h || ""}` : "";
+          elems.push(
+            <span
+              key={`${x}.${y}`}
+              data-x={x}
+              data-y={y}
+              data-c={c}
+              className={className}
+            >
+              {char ?? " "}
+            </span>
+          );
+        }
+        charsSoFar += line.length;
+      }
+      elems.push(<br key={`br.${y}`} />);
+    }
+    elems.push(<br key="br.end" />);
+    elems.push(<br key="br.end2" />);
+    return elems;
+  }, [text, highlight]);
+}
+
+export type CellClickParams = {
+  char: string;
+  charIndex?: number;
+  x?: number;
+  y?: number;
+};
+
+export type CodeboxInputMode = "type" | "touch";
 
 export type CodeboxProps = {
   value: string;
+  highlight?: string;
   onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
-  disabled?: boolean;
+  onCellClick: (params: CellClickParams) => void;
+  className?: string;
+  padX?: number;
+  padY?: number;
+  inputMode?: CodeboxInputMode;
 };
 
 export function Codebox(props: CodeboxProps) {
-  const { value, onChange, disabled } = props;
-  const content = value.split("").map((c, i) => <span key={i}>{c}</span>);
+  const {
+    value,
+    onChange,
+    highlight = "",
+    className,
+    padX,
+    padY,
+    inputMode = "type",
+    onCellClick,
+  } = props;
+  const highlightedChars = useHighlightedChars(value, highlight, padX, padY);
+
+  const handleClick = useCallback(
+    (e: React.MouseEvent<HTMLPreElement>) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const elem = e.target as any as HTMLElement;
+      const { x, y, c } = elem.dataset;
+      if (x === undefined) return;
+
+      onCellClick?.({
+        char: elem.innerHTML,
+        charIndex: toNumber(c),
+        x: toNumber(x),
+        y: toNumber(y),
+      });
+    },
+    [onCellClick]
+  );
+
+  const highlightClassName = clsx(
+    classes.highlight,
+    inputMode === "type" && classes.highlightType,
+    inputMode === "touch" && classes.highlightTouch
+  );
+
   return (
-    <div className={classes.codebox}>
+    <div className={clsx(classes.codebox, className)}>
       <div className={classes.inner}>
         <textarea
           className={classes.textarea}
@@ -20,12 +118,13 @@ export function Codebox(props: CodeboxProps) {
           autoComplete="off"
           autoCorrect="off"
           spellCheck="false"
-          disabled={disabled}
         />
-        <pre className={classes.highlight} aria-hidden="true">
-          {content}
-          <br />
-          <br />
+        <pre
+          className={highlightClassName}
+          aria-hidden="true"
+          onClick={handleClick}
+        >
+          {highlightedChars}
         </pre>
       </div>
     </div>

@@ -52,14 +52,16 @@
   outline: 0;
 }
 
-.textarea:disabled {
-  user-select: none;
-  opacity: 0;
-}
-
 .highlight {
   position: relative;
-  pointer-events: none;
   padding: 0rem;
   user-select: none;
 }
+
+.highlightType {
+  pointer-events: none;
+}
+
+/* .highlightTouch {
+  cursor: pointer;
+} */
