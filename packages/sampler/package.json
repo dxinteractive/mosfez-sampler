@@ -29,9 +29,11 @@
     "pretty": "yarn prettier --write .",
     "prepare": "yarn build && rsync -vt dist/* .",
     "postpublish": "yarn clean",
-    "clean": "rm -rf sampler.*"
+    "postinstall": "yarn clean",
+    "clean": "rm -rf audio-source.* convert.* sampler.* touch-start.*"
   },
   "devDependencies": {
+    "@types/audiobuffer-to-wav": "^1.0.2",
     "@types/jest": "^27.5.1",
     "@typescript-eslint/eslint-plugin": "^5.19.0",
     "@typescript-eslint/parser": "^5.19.0",
@@ -40,6 +42,7 @@
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-react": "^7.29.4",
     "jest": "^28.1.0",
+    "jest-environment-jsdom": "^29.5.0",
     "prettier": "2.6.2",
     "rollup": "^2.78.0",
     "rollup-plugin-dts": "^4.2.2",
@@ -51,6 +54,13 @@
   },
   "sideEffects": false,
   "files": [
-    "sampler.*"
-  ]
+    "audio-source.*",
+    "convert.*",
+    "sampler.*",
+    "touch-start.*"
+  ],
+  "dependencies": {
+    "@types/audiobuffer-to-wav": "^1.0.2",
+    "audiobuffer-to-wav": "^1.0.0"
+  }
 }

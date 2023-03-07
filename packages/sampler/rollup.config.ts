@@ -2,7 +2,7 @@ import dts from "rollup-plugin-dts";
 import esbuild from "rollup-plugin-esbuild";
 import { string } from "rollup-plugin-string";
 
-const tsToJsEntrypoints = ["sampler"];
+const tsToJsEntrypoints = ["audio-source", "convert", "sampler", "touch-start"];
 
 export default tsToJsEntrypoints.flatMap((name) => {
   const common = {

@@ -2,6 +2,14 @@ import { useCallback, useMemo } from "react";
 import clsx from "clsx";
 import classes from "./codebox.module.css";
 
+export function setCharAtPos(text: string, x: number, y: number, char: string) {
+  const lines = text.split("\n");
+  const line = lines[y].split("");
+  line[x] = char;
+  lines[y] = line.join("");
+  return lines.join("\n");
+}
+
 function toNumber(str?: string) {
   return str === undefined ? undefined : Number(str);
 }
@@ -13,7 +21,6 @@ function useHighlightedChars(
   padY: number | undefined
 ) {
   return useMemo(() => {
-    console.log("...");
     const elems: React.ReactNode[] = [];
     const highlights = highlight.split("");
     const lines = text.split("\n");
@@ -21,28 +28,27 @@ function useHighlightedChars(
     let charsSoFar = 0;
     for (let y = 0; y < ymax; y++) {
       const line = lines[y];
-      if (line) {
-        const xmax = Math.max(line.length, padX ?? 0);
-        for (let x = 0; x < xmax; x++) {
-          const charIndex = charsSoFar + x;
-          const char = line[x];
-          const h = char ? highlights[charIndex] : undefined;
-          const c = char ? charIndex : undefined;
-          const className = h ? `highlight-${h || ""}` : "";
-          elems.push(
-            <span
-              key={`${x}.${y}`}
-              data-x={x}
-              data-y={y}
-              data-c={c}
-              className={className}
-            >
-              {char ?? " "}
-            </span>
-          );
-        }
-        charsSoFar += line.length;
+      const lineLength = line?.length ?? 0;
+      const xmax = Math.max(lineLength, padX ?? 0);
+      for (let x = 0; x < xmax; x++) {
+        const charIndex = charsSoFar + x;
+        const char = line?.[x];
+        const h = char ? highlights[charIndex] : undefined;
+        const c = char ? charIndex : undefined;
+        const className = h ? `highlight-${h || ""}` : "";
+        elems.push(
+          <span
+            key={`${x}.${y}`}
+            data-x={x}
+            data-y={y}
+            data-c={c}
+            className={className}
+          >
+            {char ?? " "}
+          </span>
+        );
       }
+      charsSoFar += lineLength;
       elems.push(<br key={`br.${y}`} />);
     }
     elems.push(<br key="br.end" />);

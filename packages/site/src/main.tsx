@@ -6,6 +6,43 @@ import "./main.css";
 import classes from "./main.module.css";
 import { Codebox } from "./codebox/codebox";
 
+import { Sampler, clip } from "mosfez-sampler/sampler";
+import { touchStart } from "mosfez-sampler/touch-start";
+import { toAudioBuffer } from "mosfez-sampler/convert";
+
+(async () => {
+  console.log("new sampler");
+  const audioContext = new AudioContext();
+  touchStart(audioContext);
+
+  const max = audioContext.sampleRate * 0.25;
+  const array: number[][] = [[]];
+  for (let i = 0; i < max; i++) {
+    const t = i / max;
+    const v = Math.sin(t * Math.PI * 2 * 440);
+    array[0].push(v * 0.1 + 0.5);
+  }
+  const helloBuffer = await toAudioBuffer(array, audioContext);
+
+  const sampler = new Sampler({ audioContext });
+  sampler.updateSamples({
+    "hello.wav": helloBuffer,
+  });
+  sampler.setInstrument("hello", clip({ sample: "hello.wav" }));
+  sampler.setSequence("hello", [
+    { time: 0 },
+    { time: 1 },
+    { time: 2 },
+    { time: 3 },
+    { time: 4 },
+  ]);
+  sampler.play();
+
+  await new Promise((r) => setTimeout(r, 3500));
+
+  sampler.stop();
+})();
+
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>

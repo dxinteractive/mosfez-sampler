@@ -1,5 +1,8 @@
 {
   "include": ["src", "@types"],
+  "exclude": [
+    "*.test.ts"
+  ],
   "compilerOptions": {
     "module": "esnext",
     "target": "esnext",

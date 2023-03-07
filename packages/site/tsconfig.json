@@ -20,5 +20,9 @@
     }
   },
   "include": ["src", "../sampler/src"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "exclude": [
+    "*.test.ts"
+  ],
+  "references": [{ "path": "./tsconfig.node.json" }],
+  "typeRoots": ["node_modules/@types", "./@types"]
 }

@@ -20,7 +20,7 @@
     "clean": "yarn lerna run clean",
     "preview": "yarn lerna run preview",
     "build-gh-pages": "yarn lerna run build-gh-pages",
-    "ci": "yarn lint && yarn build && yarn test"
+    "ci": "yarn clean && yarn lint && yarn build && yarn test"
   },
   "workspaces": {
     "packages": [
