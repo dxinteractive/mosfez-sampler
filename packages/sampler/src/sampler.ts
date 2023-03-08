@@ -144,12 +144,9 @@ export class Sampler {
       const buffer = this._sampleMap.get(sample);
       if (!buffer) return;
 
-      // - schedule these using a rolling clock
       // - schedule longer sounds into chunks
-      // - push this code inside of clip()
       sequence.forEach((event) => {
         this._scheduler.push(buffer, startTime + event.time);
-        // startClip(buffer, this._audioContext, startTime + event.time);
       });
     });
   }
