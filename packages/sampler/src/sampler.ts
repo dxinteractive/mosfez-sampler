@@ -1,3 +1,9 @@
+//
+// instrument definitions
+//
+
+import { Ticker } from "./ticker";
+
 export type InstrumentDefinition = {
   sample: string;
 };
@@ -12,38 +18,92 @@ export function clip(params: ClipParams): InstrumentDefinition {
   };
 }
 
-function startClip(
-  buffer: AudioBuffer,
-  audioContext: AudioContext,
-  time: number
-) {
-  const source = audioContext.createBufferSource();
-  source.buffer = buffer;
-  source.connect(audioContext.destination);
-  source.addEventListener("ended", () => {
-    source.disconnect(audioContext.destination);
-  });
-  source.start(time);
+//
+// scheduler
+//
+
+export type SchedulerConfig = {
+  audioContext: AudioContext;
+  schedulerRate: number;
+  lookAhead: number;
+};
+
+class Scheduler {
+  private _audioContext: AudioContext;
+  private _lookAhead: number;
+  private _ticker: Ticker;
+  private _queue: [AudioBuffer, number][] = [];
+
+  constructor(config: SchedulerConfig) {
+    const { audioContext, schedulerRate, lookAhead } = config;
+    this._audioContext = audioContext;
+    this._lookAhead = lookAhead;
+    this._ticker = new Ticker(
+      this.tick.bind(this),
+      "worker",
+      schedulerRate,
+      audioContext.sampleRate
+    );
+  }
+
+  tick = () => {
+    const audioContext = this._audioContext;
+    while (this._queue.length > 0) {
+      const item = this._queue[0];
+      const time = item[1];
+      if (time > audioContext.currentTime + this._lookAhead) {
+        break;
+      }
+      this._queue.shift();
+      if (time < audioContext.currentTime) {
+        throw new Error("skipped!");
+      }
+
+      const source = audioContext.createBufferSource();
+      source.buffer = item[0];
+      source.connect(audioContext.destination);
+      source.addEventListener("ended", () => {
+        source.disconnect(audioContext.destination);
+      });
+      source.start(time);
+    }
+  };
+
+  public push(buffer: AudioBuffer, time: number) {
+    this._queue.push([buffer, time]);
+  }
+
+  public dispose() {
+    this._ticker.dispose();
+  }
 }
 
 export type TimedEvent = {
   time: number;
 };
 
+//
+// sampler
+//
+
 export type SamplerConfig = {
   audioContext: AudioContext;
+  schedulerRate?: number;
+  lookAhead?: number;
 };
 
 export class Sampler {
   private _audioContext: AudioContext;
+  private _scheduler: Scheduler;
   private _mixer: GainNode;
   private _sampleMap = new Map<string, AudioBuffer>();
   private _instrumentMap = new Map<string, InstrumentDefinition>();
   private _sequenceMap = new Map<string, TimedEvent[]>();
 
   constructor(config: SamplerConfig) {
-    const { audioContext } = config;
+    const { audioContext, schedulerRate = 0.025, lookAhead = 0.1 } = config;
     this._audioContext = audioContext;
+    this._scheduler = new Scheduler({ audioContext, schedulerRate, lookAhead });
     this._mixer = new GainNode(audioContext);
     this._mixer.connect(audioContext.destination);
   }
@@ -88,7 +148,8 @@ export class Sampler {
       // - schedule longer sounds into chunks
       // - push this code inside of clip()
       sequence.forEach((event) => {
-        startClip(buffer, this._audioContext, startTime + event.time);
+        this._scheduler.push(buffer, startTime + event.time);
+        // startClip(buffer, this._audioContext, startTime + event.time);
       });
     });
   }
