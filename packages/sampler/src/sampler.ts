@@ -22,22 +22,42 @@ export function clip(params: ClipParams): InstrumentDefinition {
 // scheduler
 //
 
+type PlaybackSample = {
+  buffer: AudioBuffer;
+  time: number;
+  offset?: number;
+  duration?: number;
+};
+
 export type SchedulerConfig = {
   audioContext: AudioContext;
+  destinationNode: AudioNode;
   schedulerRate: number;
   lookAhead: number;
+  chunkLength: number;
 };
 
 class Scheduler {
   private _audioContext: AudioContext;
+  private _destinationNode: AudioNode;
   private _lookAhead: number;
+  private _chunkLength: number;
   private _ticker: Ticker;
-  private _queue: [AudioBuffer, number][] = [];
+  private _queue: PlaybackSample[] = [];
 
   constructor(config: SchedulerConfig) {
-    const { audioContext, schedulerRate, lookAhead } = config;
+    const {
+      audioContext,
+      destinationNode,
+      schedulerRate,
+      lookAhead,
+      chunkLength,
+    } = config;
+
     this._audioContext = audioContext;
+    this._destinationNode = destinationNode;
     this._lookAhead = lookAhead;
+    this._chunkLength = chunkLength;
     this._ticker = new Ticker(
       this.tick.bind(this),
       "worker",
@@ -50,27 +70,63 @@ class Scheduler {
     const audioContext = this._audioContext;
     while (this._queue.length > 0) {
       const item = this._queue[0];
-      const time = item[1];
-      if (time > audioContext.currentTime + this._lookAhead) {
+      if (item.time > audioContext.currentTime + this._lookAhead) {
         break;
       }
       this._queue.shift();
-      if (time < audioContext.currentTime) {
+      if (item.time < audioContext.currentTime) {
         throw new Error("skipped!");
       }
 
       const source = audioContext.createBufferSource();
-      source.buffer = item[0];
-      source.connect(audioContext.destination);
+      source.buffer = item.buffer;
+      source.connect(this._destinationNode);
       source.addEventListener("ended", () => {
-        source.disconnect(audioContext.destination);
+        source.disconnect(this._destinationNode);
       });
-      source.start(time);
+      source.start(item.time, item.offset, item.duration);
+      // todo - mute tails (batch everyone together to a single gain node until clear(), then make a new one)
+      // todo - render with pitch curves
+      // source.playbackRate.setValueCurveAtTime([1, 2, 1, 2], item.time, 0.1);
     }
   };
 
-  public push(buffer: AudioBuffer, time: number) {
-    this._queue.push([buffer, time]);
+  public schedule(playbackSamples: PlaybackSample[]) {
+    for (let i = 0; i < playbackSamples.length; i++) {
+      const sample = playbackSamples[i];
+      const sampleOffset = sample.offset ?? 0;
+      let sampleLength =
+        sample.buffer.length / this._audioContext.sampleRate - sampleOffset;
+
+      if (sample.duration !== undefined && sample.duration < sampleLength) {
+        sampleLength = sample.duration;
+      }
+
+      const chunks = Math.ceil(sampleLength / this._chunkLength);
+      if (chunks === 1) {
+        this._queue.push(sample);
+      } else if (chunks > 1) {
+        for (let c = 0; c < chunks; c++) {
+          const offset = this._chunkLength * c - sampleOffset;
+          this._queue.push({
+            buffer: sample.buffer,
+            time: sample.time + offset,
+            offset,
+            duration: this._chunkLength,
+          });
+        }
+      }
+    }
+
+    this._queue.sort((a, b) => {
+      if (a.time > b.time) return 1;
+      if (b.time > a.time) return -1;
+      return 0;
+    });
+  }
+
+  public clear() {
+    this._queue.length = 0;
   }
 
   public dispose() {
@@ -90,6 +146,7 @@ export type SamplerConfig = {
   audioContext: AudioContext;
   schedulerRate?: number;
   lookAhead?: number;
+  chunkLength?: number;
 };
 
 export class Sampler {
@@ -101,11 +158,23 @@ export class Sampler {
   private _sequenceMap = new Map<string, TimedEvent[]>();
 
   constructor(config: SamplerConfig) {
-    const { audioContext, schedulerRate = 0.025, lookAhead = 0.1 } = config;
+    const {
+      audioContext,
+      schedulerRate = 0.025,
+      lookAhead = 0.1,
+      chunkLength = 1,
+    } = config;
+
     this._audioContext = audioContext;
-    this._scheduler = new Scheduler({ audioContext, schedulerRate, lookAhead });
     this._mixer = new GainNode(audioContext);
     this._mixer.connect(audioContext.destination);
+    this._scheduler = new Scheduler({
+      audioContext,
+      destinationNode: this._mixer,
+      schedulerRate,
+      lookAhead,
+      chunkLength,
+    });
   }
 
   public updateSamples(sampleMap: Record<string, AudioBuffer | undefined>) {
@@ -127,11 +196,22 @@ export class Sampler {
   }
 
   public setSequence(name: string, sequence: TimedEvent[]) {
+    // clone and sort array
     this._sequenceMap.set(name, sequence);
   }
 
   public deleteSequence(name: string) {
     this._sequenceMap.delete(name);
+  }
+
+  public get time(): number {
+    // - return time of playhead
+    return 0;
+  }
+
+  public get length(): number {
+    // - return time of last event plus more
+    return 0;
   }
 
   public play() {
@@ -144,16 +224,20 @@ export class Sampler {
       const buffer = this._sampleMap.get(sample);
       if (!buffer) return;
 
-      // - schedule longer sounds into chunks
-      sequence.forEach((event) => {
-        this._scheduler.push(buffer, startTime + event.time);
+      const playbackSamples = sequence.map((event) => {
+        const time = startTime + event.time;
+        return {
+          buffer,
+          time,
+        };
       });
+
+      this._scheduler.schedule(playbackSamples);
     });
   }
 
   public stop() {
-    // - mute active sounds
-    // - stop scheduling more events
+    this._scheduler.clear();
   }
 
   public goto(/*time: number*/) {
@@ -161,14 +245,13 @@ export class Sampler {
     // - set the playhead from
   }
 
-  public get length(): number {
-    // - return time of last event plus more
-    return 0;
-  }
-
   public async export() {
     // - make this render the whole thing
     // - make this accept an optional time range
+  }
+
+  public dispose() {
+    this._scheduler.dispose();
   }
 }
 

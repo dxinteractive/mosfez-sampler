@@ -15,12 +15,14 @@ import { toAudioBuffer } from "mosfez-sampler/convert";
   const audioContext = new AudioContext();
   touchStart(audioContext);
 
-  const max = audioContext.sampleRate * 0.25;
+  const max = audioContext.sampleRate * 2;
   const array: number[][] = [[]];
+  let pitch = 200;
   for (let i = 0; i < max; i++) {
     const t = i / max;
-    const v = Math.sin(t * Math.PI * 2 * 440);
-    array[0].push(v * 0.1 + 0.5);
+    const v = Math.sin(t * Math.PI * 2 * pitch);
+    array[0].push(v * 0.2);
+    pitch += 0.001;
   }
   const helloBuffer = await toAudioBuffer(array, audioContext);
 
@@ -29,13 +31,12 @@ import { toAudioBuffer } from "mosfez-sampler/convert";
     "hello.wav": helloBuffer,
   });
   sampler.setInstrument("hello", clip({ sample: "hello.wav" }));
-  sampler.setSequence("hello", [
-    { time: 0 },
-    { time: 1 },
-    { time: 2 },
-    { time: 3 },
-    { time: 4 },
-  ]);
+
+  const s = [];
+  for (let i = 0; i < 5; i++) {
+    s.push({ time: 0.1 + i });
+  }
+  sampler.setSequence("hello", s);
   sampler.play();
 
   await new Promise((r) => setTimeout(r, 3500));
