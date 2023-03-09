@@ -30,7 +30,7 @@
     "prepare": "yarn build && rsync -vt dist/* .",
     "postpublish": "yarn clean",
     "postinstall": "yarn clean",
-    "clean": "rm -rf audio-source.* convert.* sampler.* touch-start.*"
+    "clean": "rm -rf audio-source.* clip.* convert.* instrument.* sampler.* touch-start.*"
   },
   "devDependencies": {
     "@types/audiobuffer-to-wav": "^1.0.2",
@@ -55,7 +55,9 @@
   "sideEffects": false,
   "files": [
     "audio-source.*",
+    "clip.*",
     "convert.*",
+    "instrument.*",
     "sampler.*",
     "touch-start.*"
   ],
