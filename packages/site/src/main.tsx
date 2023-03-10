@@ -41,7 +41,7 @@ let clip: Clip | undefined;
   clip = new Clip();
   clip.sample = "hello.wav";
   clip.mode = "cutoff";
-  sampler.addInstrument("hello", clip);
+  sampler.addInstrument(clip);
 
   const sequence: ClipEvent[] = [];
   for (let i = 0; i < 5; i++) {
@@ -49,17 +49,19 @@ let clip: Clip | undefined;
   }
   // sampler.setSequence("hello", sequence);
   clip.setSequence(sequence);
-  clip.playSequence();
+  // clip.playSequence();
 
-  sampler.play();
-  await new Promise((r) => setTimeout(r, 3500));
-  console.log("stop");
-  sampler.clear();
+  // sampler.play();
+  // await new Promise((r) => setTimeout(r, 3500));
+  // console.log("stop");
+  // sampler.clear();
 })();
+
+let lastId: string | undefined;
 
 const handlePlay = async () => {
   if (!clip) return;
-  clip.playSample();
+  lastId = clip.playSample();
   // await new Promise((r) => setTimeout(r, 5));
   // clip.playSample();
   // await new Promise((r) => setTimeout(r, 5));
@@ -78,10 +80,9 @@ const handlePlay = async () => {
   // clip.playSample();
 };
 const handleStop = () => {
-  if (!clip) return;
-  // - todo playback modes (overlap, cut-off etc)
-  // - todo stop()
-  // clip.clear();
+  if (lastId) {
+    // clip?.stopSample(lastId);
+  }
 };
 
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion

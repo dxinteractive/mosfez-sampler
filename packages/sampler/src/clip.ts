@@ -30,11 +30,23 @@ export class Clip extends Instrument {
     this.sampler._scheduler.schedule([
       {
         id,
-        time: 0,
+        time: 0, // todo - add option to schedule at next chunk for stronger timing guarantees - what value does tone.js use?
         buffer,
         cutoffId: this._getCutoffId(),
       },
     ]);
+
+    return id;
+  }
+
+  stopSample(id: string) {
+    if (id.startsWith(this.id)) {
+      this.sampler._scheduler.clear(id);
+    }
+  }
+
+  stopAllSamples() {
+    this.sampler._scheduler.clear(this.id);
   }
 
   playSequence() {
@@ -54,6 +66,10 @@ export class Clip extends Instrument {
     });
 
     this.sampler._scheduler.schedule(playbackSamples);
+  }
+
+  renderSequence() {
+    // todo - use elementary to render this offline
   }
 
   setSequence(events: ClipEvent[]) {

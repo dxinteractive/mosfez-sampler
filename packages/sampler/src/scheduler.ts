@@ -7,7 +7,7 @@ export type PlaybackSample = {
   offset?: number;
   duration?: number;
   cutoffId?: string;
-  gain?: number;
+  // gain?: number;
   // gainStepRate?: number;
 };
 
@@ -75,6 +75,13 @@ export class Scheduler {
   }
 
   private _chunk(sample: PlaybackSample) {
+    // samples can't be chunked if time is 0
+    // because we can't time the second chunk
+    // to follow perfectly after the first
+    if (sample.time === 0) {
+      return [sample];
+    }
+
     const sampleOffset = sample.offset ?? 0;
     let sampleLength = sample.buffer.duration - sampleOffset;
 
@@ -118,7 +125,7 @@ export class Scheduler {
     sourceNode.connect(gainNode);
     gainNode.connect(this._destinationNode);
 
-    this._setGain(item, gainNode);
+    // this._setGain(item, gainNode);
 
     const activePlaybackSample = {
       ...item,
@@ -140,17 +147,17 @@ export class Scheduler {
     sourceNode.start(item.time, item.offset ?? 0, item.duration);
   }
 
-  private _setGain(item: PlaybackSample, gainNode: GainNode) {
-    if (typeof item.gain === "number") {
-      gainNode.gain.value = item.gain;
-      return;
-    }
+  // private _setGain(item: PlaybackSample, gainNode: GainNode) {
+  // if (typeof item.gain === "number") {
+  //   gainNode.gain.value = item.gain;
+  //   return;
+  // }
 
-    // if(Array.isArray(item.gain)) {
-    //   gainNode.gain.
-    //   return;
-    // }
-  }
+  // if(Array.isArray(item.gain)) {
+  //   gainNode.gain.
+  //   return;
+  // }
+  // }
 
   private _muteActiveSample(item: ActivePlaybackSample, time = 0) {
     const { gain } = item.gainNode;

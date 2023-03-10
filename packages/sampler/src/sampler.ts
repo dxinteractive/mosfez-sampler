@@ -29,7 +29,7 @@ export class Sampler {
       lookAhead = 0.1,
       // ^ schedules this far in advance
       // higher = more resilient to code activity on the main thread
-      chunkLength = 5,
+      chunkLength = 1,
       // ^ length of chunks
       // chunks break up long samples so that after a stop()
       // and once samples are muted, we don't have to wait
@@ -93,7 +93,7 @@ export class Sampler {
     });
   }
 
-  public addInstrument(_name: string, instrument: Instrument) {
+  public addInstrument(instrument: Instrument /* name?: string */) {
     instrument.setSampler(this);
     // this._instrumentMap.set(name, instrument);
   }
