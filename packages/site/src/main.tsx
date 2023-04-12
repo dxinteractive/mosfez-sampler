@@ -40,8 +40,15 @@ let clip: Clip | undefined;
 
   clip = new Clip();
   clip.sample = "hello.wav";
-  clip.mode = "cutoff";
+  clip.mode = "overlap";
   sampler.addInstrument(clip);
+
+  // todo - what other types next?
+  // todo - sequencing?
+  // todo - offline rendering?
+  // todo - envelope / low pass filter?
+  // todo - 1DSampler()?
+  // todo - 2DSampler()?
 
   const sequence: ClipEvent[] = [];
   for (let i = 0; i < 5; i++) {
